@@ -1,6 +1,7 @@
 package com.autodeploy;
 
 import com.autodeploy.util.AppProperties;
+import com.autodeploy.util.ScriptRunner;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.codec.digest.HmacUtils;
 import spark.Request;
@@ -20,9 +21,11 @@ public class RestController {
 
     private AppProperties appProperties;
     private String secretKey;
+    private ScriptRunner scriptRunner;
 
-    public RestController() throws IOException {
-        appProperties = new AppProperties();
+    public RestController(AppProperties appProperties) throws IOException {
+        this.appProperties = appProperties;
+        scriptRunner = new ScriptRunner();
         secretKey = System.getenv("GHSecretKey");
         Objects.requireNonNull(secretKey, "Github secret key is required");
     }
@@ -59,7 +62,7 @@ public class RestController {
 
                String shellPath = appProperties.getProps().getProperty(repoKey);
                if (shellPath != null && new File(shellPath).exists()) {
-                   callShellScript(shellPath);
+                   scriptRunner.callShellScript(shellPath);
                } else {
                    System.err.println("Not found property: " + repoKey);
                }
@@ -80,7 +83,4 @@ public class RestController {
         });
     }
 
-    private void callShellScript(String shellPath) {
-
-    }
 }
