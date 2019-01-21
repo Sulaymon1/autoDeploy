@@ -1,5 +1,8 @@
 package com.autodeploy.util;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -10,23 +13,27 @@ public class ScriptRunner {
 
     private String RUSSIAN_CHARSET = "Cp866";
 
+    private Logger logger = LoggerFactory.getLogger(ScriptRunner.class);
     public void callShellScript(String shellScriptPath) throws IOException {
         if (OsUtils.isWindows()){
             Path path = Paths.get(shellScriptPath);
             Path fileName = path.getFileName();
             if (fileName.toString().endsWith(".bat")){
-                System.err.println("**********Start script**********");
+                logger.info("**********Start script {} **********", fileName.toString());
+
                 Process exec = Runtime.getRuntime().exec(shellScriptPath);
+
                 String line;
                 BufferedReader br = new BufferedReader(new InputStreamReader(exec.getInputStream()));
                 BufferedReader brError = new BufferedReader(new InputStreamReader(exec.getErrorStream(),RUSSIAN_CHARSET));
                 while ((line=br.readLine()) != null){
-                    System.out.println(line);
+                    logger.info(line);
                 }
                 while ((line=brError.readLine()) != null){
-                    System.err.println(line);
+                    logger.error(line);
                 }
-                System.err.println("********** End script **********");
+
+                logger.info("********** End script {} **********", fileName.toString());
             }else {
                 throw new RuntimeException("File is not executable! " + fileName);
             }

@@ -4,6 +4,8 @@ import com.autodeploy.util.AppProperties;
 import com.autodeploy.util.ScriptRunner;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.codec.digest.HmacUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import spark.Request;
 import spark.Response;
 import spark.Route;
@@ -19,11 +21,12 @@ import static spark.Spark.post;
 
 public class RestController {
 
+    private Logger logger = LoggerFactory.getLogger(RestController.class);
     private AppProperties appProperties;
     private String secretKey;
     private ScriptRunner scriptRunner;
 
-    public RestController(AppProperties appProperties) throws IOException {
+    public RestController(AppProperties appProperties) {
         this.appProperties = appProperties;
         scriptRunner = new ScriptRunner();
         secretKey = System.getenv("GHSecretKey");
@@ -58,6 +61,7 @@ public class RestController {
                Map<?, ?> payloadMap = new ObjectMapper().readValue(payload, Map.class);
                repo = (Map<?, ?>) payloadMap.get("repository");
                String repoName = (String) repo.get("full_name");
+               logger.info("Notification from {}", repoName);
                String repoKey = "REPO_" + repoName.replace("/", "_").toUpperCase() + "_SHELL";
 
                String shellPath = appProperties.getProps().getProperty(repoKey);
